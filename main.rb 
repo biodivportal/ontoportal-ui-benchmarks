@@ -1,0 +1,45 @@
+require 'optparse'
+require 'uri'
+
+# Parse command-line options
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: script.rb [options]"
+
+  opts.on("-u", "--url URL", "Specify the URL to connect to") do |url|
+    # Validate URL format
+    begin
+      uri = URI.parse(url)
+      raise URI::InvalidURIError unless uri.kind_of?(URI::HTTP) || uri.kind_of?(URI::HTTPS)
+      options[:url] = url
+    rescue URI::InvalidURIError
+      puts "Error: Invalid URL format. Please provide a valid HTTP or HTTPS URL."
+      exit 1
+    end
+  end
+
+  opts.on("-k", "--apikey KEY", "Specify the API key") do |apikey|
+    # Basic API key validation (you can customize this)
+    if apikey.nil? || apikey.strip.empty?
+      puts "Error: API key cannot be empty."
+      exit 1
+    end
+    options[:apikey] = apikey
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+# Check if required options are provided
+if options[:url].nil?
+  puts "Error: URL is required. Use -u or --url to specify."
+  exit 1
+end
+
+if options[:apikey].nil?
+  puts "Error: API key is required. Use -k or --apikey to specify."
+  exit 1
+end
